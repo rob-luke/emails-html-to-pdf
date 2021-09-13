@@ -1,0 +1,21 @@
+version: "3.1"
+
+services:
+
+  mailtopdf:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    environment:
+      UID: 1000
+      GID: 1000
+      PYTHONUNBUFFERED: 1
+      IMAP_URL:
+      IMAP_USERNAME:
+      IMAP_PASSWORD:
+      IMAP_FOLDER:
+      SMTP_URL:
+      MAIL_SENDER:
+      MAIL_DESTINATION:
+    restart: always
+

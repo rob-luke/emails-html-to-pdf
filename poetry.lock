@@ -1,0 +1,32 @@
+[[package]]
+name = "imap-tools"
+version = "0.46.0"
+description = "Work with email by IMAP"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "pdfkit"
+version = "0.6.1"
+description = "Wkhtmltopdf python wrapper to convert html to pdf using the webkit rendering engine and qt"
+category = "main"
+optional = false
+python-versions = "*"
+
+[metadata]
+lock-version = "1.1"
+python-versions = "^3.9"
+content-hash = "221b2148b2b8db5f5dcf7ac84b095e69cb23c20d66fa6ac9fb2e114e0bc0328c"
+
+[metadata.files]
+imap-tools = [
+    {file = "imap-tools-0.46.0.tar.gz", hash = "sha256:f32284c3d55f17112b0e8db9a148106b391d5945277d9b89bd6bfd9712bdd6bf"},
+    {file = "imap_tools-0.46.0-py3-none-any.whl", hash = "sha256:b5f0dc2b4e45cf4a3724d0d845c218142e0cc01dbab220480dbc3c1cbf0bed69"},
+]
+pdfkit = [
+    {file = "pdfkit-0.6.1-py2-none-any.whl", hash = "sha256:6a866c9659e62a81abd72cdb32b400762d76085b964beb0b15106d573a539677"},
+    {file = "pdfkit-0.6.1-py2.7.egg", hash = "sha256:a315a665c266db28fb751891d0661fe5e750ced812cb4eadb3ce63afba9a7475"},
+    {file = "pdfkit-0.6.1-py3-none-any.whl", hash = "sha256:05f1c631e8d9ab877886955da825e48b459e097886a21448ab17b34c60cfd66c"},
+    {file = "pdfkit-0.6.1.tar.gz", hash = "sha256:ef1da35b78d534197e7ce4a604a4a190e9aa769e56634957535f3479a50d8cd1"},
+]
