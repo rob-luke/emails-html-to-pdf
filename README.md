@@ -2,10 +2,11 @@
 
 This script will check an imap folder for unread emails.
 Any unread email that does not have an attachment will be converted to a pdf
-and then emailed back to that account.
+and then emailed to the address you specify.
 
-This was built to integrate with paperless-ng which works with pdf attachements.
-However, I get many bills that are html only, so I wanted them converted
+This was built to integrate with [paperless-ng](https://github.com/jonaswinkler/paperless-ng) 
+which works with pdf attachements.
+However, I get many documents that are html only, so I wanted them converted
 to pdf for storage in paperless-ng.
 
 
