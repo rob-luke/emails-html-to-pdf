@@ -3,7 +3,7 @@
 This script will check an imap folder for unread emails.
 Any unread email that does not have an attachment will be converted to a pdf
 and then emailed to the address you specify.
-The script is run every minute.
+The script is run at a configurable interval.
 
 This was built to integrate with [paperless-ng](https://github.com/jonaswinkler/paperless-ng) 
 which works with pdf attachements.
