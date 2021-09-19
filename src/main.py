@@ -64,7 +64,9 @@ def process_mail(mark_read=True, num_emails_limit=50, imap_url=None, imap_userna
             if len(msg.attachments) == 0:
                 print(f"\nNo attachments in: {msg.subject}")
                 html = '<meta http-equiv="Content-type" content="text/html; charset=utf-8"/>' + msg.html
-                filename = f'{msg.subject.replace(".", "_").replace(" ", "-")}.pdf'
+                filename = f'{msg.subject}.pdf'
+                for bad_char in ["/", "*", ":", "<", ">", "|", '"', '.', '_']:
+                    filename = filename.replace(bad_char, "_")
                 pdfkit.from_string(html, filename)
                 send_mail(mail_sender,
                           mail_destination,
