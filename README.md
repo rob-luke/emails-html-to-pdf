@@ -22,6 +22,7 @@ The following parameters are used:
 * `SMTP_URL`
 * `MAIL_SENDER`: Address the mail with pdf should be sent from
 * `MAIL_DESTINATION`: Where to send the resulting pdf
+* `INTER_RUN_INTERVAL`: Time in seconds that the system should wait between running the script
 
 ### Docker-Compose
 
@@ -47,6 +48,7 @@ services:
       - SMTP_URL=smtp.provider.com
       - MAIL_SENDER=user+paperless@provider.net
       - MAIL_DESTINATION=user+paperless@provider.net
+      - INTER_RUN_INTERVAL=600
 ```
 
 
