@@ -17,5 +17,6 @@ services:
       SMTP_URL:
       MAIL_SENDER:
       MAIL_DESTINATION:
+      INTER_RUN_INTERVAL: 600
     restart: always
 

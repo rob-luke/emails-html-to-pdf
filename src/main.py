@@ -89,6 +89,8 @@ if __name__ == '__main__':
     sender = os.environ.get("MAIL_SENDER")
     destination = os.environ.get("MAIL_DESTINATION")
 
+    print("Running emails-html-to-pdf")
+
     process_mail(imap_url=server_imap,
                  imap_username=username,
                  imap_password=password,
