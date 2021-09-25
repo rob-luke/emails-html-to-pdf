@@ -10,13 +10,14 @@ services:
       UID: 1000
       GID: 1000
       PYTHONUNBUFFERED: 1
-      IMAP_URL:
-      IMAP_USERNAME:
-      IMAP_PASSWORD:
-      IMAP_FOLDER:
-      SMTP_URL:
-      MAIL_SENDER:
-      MAIL_DESTINATION:
-      INTER_RUN_INTERVAL: 600
-    restart: always
+      IMAP_URL: imap.gmail.com
+      IMAP_USERNAME: smseidl@gmail.com
+      IMAP_PASSWORD: qtxejiuxggvvdtxh
+      IMAP_FOLDER: paperless
+      SMTP_URL: smtp.gmail.com
+      MAIL_SENDER: smseidl@gmail.com
+      MAIL_DESTINATION: smseidl+paperless@gmail.com
+      INTER_RUN_INTERVAL: 300     
+      PRINT_FAILED_MSG: 'True'
+    restart: 'no' 
 
