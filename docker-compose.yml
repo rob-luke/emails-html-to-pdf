@@ -10,13 +10,14 @@ services:
       UID: 1000
       GID: 1000
       PYTHONUNBUFFERED: 1
-      IMAP_URL:
-      IMAP_USERNAME:
-      IMAP_PASSWORD:
-      IMAP_FOLDER:
-      SMTP_URL:
-      MAIL_SENDER:
-      MAIL_DESTINATION:
-      INTER_RUN_INTERVAL: 600
-    restart: always
+      IMAP_URL: 
+      IMAP_USERNAME: 
+      IMAP_PASSWORD: 
+      IMAP_FOLDER: 
+      SMTP_URL: 
+      MAIL_SENDER: 
+      MAIL_DESTINATION: 
+      INTER_RUN_INTERVAL: 300     
+      PRINT_FAILED_MSG: 'false'
+    restart: 'no' 
 
