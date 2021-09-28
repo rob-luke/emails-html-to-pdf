@@ -131,7 +131,7 @@ if __name__ == '__main__':
     sender = os.environ.get("MAIL_SENDER")
     destination = os.environ.get("MAIL_DESTINATION")
     printfailedmessage = (os.getenv('PRINT_FAILED_MSG', 'False') == 'True')
-    pdfkit_options = os.environ.get("WKHTMLTOPDF_OPTIONS","{}")
+    pdfkit_options = os.environ.get("WKHTMLTOPDF_OPTIONS")
     print("Running emails-html-to-pdf")
 
     process_mail(imap_url=server_imap,
