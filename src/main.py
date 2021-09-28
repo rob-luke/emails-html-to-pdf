@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import pdfkit
+import json
 from imap_tools import MailBox, AND, MailMessageFlags
 import os
 import smtplib
@@ -56,7 +57,7 @@ def send_mail(send_from, send_to, subject, message, files=[],
     smtp.quit()
 
 
-def process_mail(mark_read=True, num_emails_limit=50, imap_url=None, imap_username=None, imap_password=None, imap_folder=None, mail_sender=None, server_smtp=None, mail_destination=None,printfailedmessage=False):
+def process_mail(mark_read=True, num_emails_limit=50, imap_url=None, imap_username=None, imap_password=None, imap_folder=None, mail_sender=None, server_smtp=None, mail_destination=None,printfailedmessage=False,pdfkit_options=None):
     print("Starting mail processing run", flush=True)
     if printfailedmessage:
         print("*On failure, the Body of the email will be printed*")
@@ -76,8 +77,12 @@ def process_mail(mark_read=True, num_emails_limit=50, imap_url=None, imap_userna
                 for bad_char in ["/", "*", ":", "<", ">", "|", '"', "’","–"]:
                     filename = filename.replace(bad_char, "_")
                 print(f"\nPDF: {filename}")
+                options = {}
+                if pdfkit_options is not None:
+                    # parse WKHTMLTOPDF Options to dict
+                    options = json.loads(pdfkit_options)
                 try:
-                    pdfkit.from_string(pdftext, filename)
+                    pdfkit.from_string(pdftext, filename, options=options)
                 except OSError as e:
                     if any([error in str(e) for error in PDF_CONTENT_ERRORS]):
                         # allow pdfs with missing images if file got created
@@ -125,7 +130,8 @@ if __name__ == '__main__':
 
     sender = os.environ.get("MAIL_SENDER")
     destination = os.environ.get("MAIL_DESTINATION")
-    printfailedmessage = (os.getenv('PRINT_FAILED_MSG', 'False') == 'True') 
+    printfailedmessage = (os.getenv('PRINT_FAILED_MSG', 'False') == 'True')
+    pdfkit_options = os.environ.get("WKHTMLTOPDF_OPTIONS","{}")
     print("Running emails-html-to-pdf")
 
     process_mail(imap_url=server_imap,
@@ -135,4 +141,5 @@ if __name__ == '__main__':
                  mail_sender=sender,
                  mail_destination=destination,
                  server_smtp=server_smtp,
-                 printfailedmessage=printfailedmessage)
+                 printfailedmessage=printfailedmessage,
+                 pdfkit_options=pdfkit_options)
