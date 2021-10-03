@@ -52,6 +52,8 @@ services:
       - MAIL_SENDER=user+paperless@provider.net
       - MAIL_DESTINATION=user+paperless@provider.net
       - INTER_RUN_INTERVAL=600
+      - HOSTS=127.0.0.1 tracking.paypal.com
+      - WKHTMLTOPDF_OPTIONS={"load-media-error-handling":"ignore"}
 ```
 
 
