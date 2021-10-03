@@ -1,4 +1,4 @@
-version: "3.1"
+version: "3.8"
 
 services:
 
@@ -7,17 +7,15 @@ services:
       context: ./
       dockerfile: Dockerfile
     environment:
-      UID: 1000
-      GID: 1000
-      PYTHONUNBUFFERED: 1
-      IMAP_URL: 
-      IMAP_USERNAME: 
-      IMAP_PASSWORD: 
-      IMAP_FOLDER: 
-      SMTP_URL: 
-      MAIL_SENDER: 
-      MAIL_DESTINATION: 
-      INTER_RUN_INTERVAL: 300     
-      PRINT_FAILED_MSG: 'false'
-    restart: 'no' 
-
+      - IMAP_URL=
+      - IMAP_USERNAME=
+      - IMAP_PASSWORD=
+      - IMAP_FOLDER=
+      - SMTP_URL=
+      - MAIL_SENDER=
+      - MAIL_DESTINATION=
+      - INTER_RUN_INTERVAL=600
+      - PRINT_FAILED_MSG='true'
+      - HOSTS=127.0.0.1 tracking.paypal.com
+      - WKHTMLTOPDF_OPTIONS={"load-media-error-handling":"ignore"}
+    restart: always
