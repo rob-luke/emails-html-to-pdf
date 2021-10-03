@@ -14,7 +14,7 @@ services:
       - SMTP_URL=
       - MAIL_SENDER=
       - MAIL_DESTINATION=
-      - INTER_RUN_INTERVAL=600
+      - INTER_RUN_INTERVAL=300
       - PRINT_FAILED_MSG='true'
       - HOSTS=127.0.0.1 tracking.paypal.com
       - WKHTMLTOPDF_OPTIONS={"load-media-error-handling":"ignore"}

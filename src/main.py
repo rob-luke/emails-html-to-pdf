@@ -20,10 +20,10 @@ def send_mail(
     message,
     files=[],
     server=None,
-    port=587,
+    port=None,
     username=None,
     password=None,
-    use_tls=True,
+    use_tls=None,
 ):
     """Compose and send email with provided info and attachments.
 
@@ -76,8 +76,10 @@ def process_mail(
     imap_folder=None,
     mail_sender=None,
     server_smtp=None,
+    smtp_tls=None,
+    smtp_port=None,
     mail_destination=None,
-    printfailedmessage=False,
+    printfailedmessage=None,
     pdfkit_options=None,
 ):
     print("Starting mail processing run", flush=True)
@@ -112,7 +114,7 @@ def process_mail(
                     )
                 else:
                     pdftext = msg.text
-                filename = f'{msg.subject.replace(".", "_").replace(" ", "-")[:50]}.pdf'  # limit to 50 charaters for filename
+                filename = f'{msg.subject.replace(".", "_").replace(" ", "-")[:50]}.pdf'
                 print(f"\nPDF: {filename}")
                 for bad_char in ["/", "*", ":", "<", ">", "|", '"', "’", "–"]:
                     filename = filename.replace(bad_char, "_")
@@ -161,6 +163,8 @@ def process_mail(
                     server=server_smtp,
                     username=imap_username,
                     password=imap_password,
+                    port=smtp_port,
+                    use_tls=smtp_tls
                 )
                 if mark_read:
                     mailbox.flag(msg.uid, MailMessageFlags.SEEN, True)
@@ -176,11 +180,14 @@ if __name__ == "__main__":
     folder = os.environ.get("IMAP_FOLDER")
 
     server_smtp = os.environ.get("SMTP_URL")
-
     sender = os.environ.get("MAIL_SENDER")
     destination = os.environ.get("MAIL_DESTINATION")
+    smtp_port = os.getenv("SMTP_PORT", 587)
+    smtp_tls = os.getenv("SMTP_TLS", True)
+
     printfailedmessage = os.getenv("PRINT_FAILED_MSG", "False") == "True"
     pdfkit_options = os.environ.get("WKHTMLTOPDF_OPTIONS")
+
     print("Running emails-html-to-pdf")
 
     process_mail(
@@ -193,4 +200,6 @@ if __name__ == "__main__":
         server_smtp=server_smtp,
         printfailedmessage=printfailedmessage,
         pdfkit_options=pdfkit_options,
+        smtp_tls=smtp_tls,
+        smtp_port=smtp_port,
     )
