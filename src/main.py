@@ -164,7 +164,7 @@ def process_mail(
                     username=imap_username,
                     password=imap_password,
                     port=smtp_port,
-                    use_tls=smtp_tls
+                    use_tls=smtp_tls,
                 )
                 if mark_read:
                     mailbox.flag(msg.uid, MailMessageFlags.SEEN, True)
