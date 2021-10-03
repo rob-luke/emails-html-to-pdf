@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import pdfkit
+import json
 from imap_tools import MailBox, AND, MailMessageFlags
 import os
 import smtplib
@@ -45,7 +46,7 @@ def send_mail(send_from, send_to, subject, message, files=[],
             part.set_payload(file.read())
         encoders.encode_base64(part)
         part.add_header('Content-Disposition',
-                        'attachment; filename={}'.format(Path(path).name))
+                        'attachment', filename=format(Path(path).name))
         msg.attach(part)
 
     smtp = smtplib.SMTP(server, port)
@@ -56,20 +57,57 @@ def send_mail(send_from, send_to, subject, message, files=[],
     smtp.quit()
 
 
-def process_mail(mark_read=True, num_emails_limit=50, imap_url=None, imap_username=None, imap_password=None, imap_folder=None, mail_sender=None, server_smtp=None, mail_destination=None):
+def process_mail(mark_read=True, num_emails_limit=50, imap_url=None, imap_username=None, imap_password=None, imap_folder=None, mail_sender=None, server_smtp=None, mail_destination=None,printfailedmessage=False,pdfkit_options=None):
     print("Starting mail processing run", flush=True)
+    if printfailedmessage:
+        print("*On failure, the Body of the email will be printed*")
+
+    PDF_CONTENT_ERRORS = ["ContentNotFoundError", "ContentOperationNotPermittedError","UnknownContentError", "RemoteHostClosedError","ConnectionRefusedError","Server refused a stream"]
 
     with MailBox(imap_url).login(imap_username, imap_password, imap_folder) as mailbox:
         for i, msg in enumerate(mailbox.fetch(criteria=AND(seen=False), limit=num_emails_limit, mark_seen=False)):
             if len(msg.attachments) == 0:
                 print(f"\nNo attachments in: {msg.subject}")
-                html = '<meta http-equiv="Content-type" content="text/html; charset=utf-8"/>' + msg.html
-                filename = f'{msg.subject.replace(".", "_").replace(" ", "-")}.pdf'
+                if not msg.html.strip()=="":  #handle text only emails
+                    pdftext='<meta http-equiv="Content-type" content="text/html; charset=utf-8"/>' + msg.html
+                else:
+                    pdftext=msg.text
+                filename = f'{msg.subject.replace(".", "_").replace(" ", "-")[:50]}.pdf'  #limit to 50 charaters for filename
                 print(f"\nPDF: {filename}")
-                for bad_char in ["/", "*", ":", "<", ">", "|", '"', "’"]:
+                for bad_char in ["/", "*", ":", "<", ">", "|", '"', "’","–"]:
                     filename = filename.replace(bad_char, "_")
                 print(f"\nPDF: {filename}")
-                pdfkit.from_string(html, filename)
+                options = {}
+                if pdfkit_options is not None:
+                    # parse WKHTMLTOPDF Options to dict
+                    options = json.loads(pdfkit_options)
+                try:
+                    pdfkit.from_string(pdftext, filename, options=options)
+                except OSError as e:
+                    if any([error in str(e) for error in PDF_CONTENT_ERRORS]):
+                        # allow pdfs with missing images if file got created
+                        if os.path.exists(filename):
+                            if printfailedmessage:
+                                print(f"\n{pdftext}\n")
+                            print(f"\n **** HANDLED EXCEPTION ****")
+                            print(f"\n\n{str(e)}\n")
+                            print(f"\nError with images in file, continuing without them.  Email Body/HTML Above")
+
+                        else:
+                            if printfailedmessage:
+                                print(f"\n{pdftext}\n")
+                            print(f"\n !!!! UNHANDLED EXCEPTION with PDF Content Errors: {PDF_CONTENT_ERRORS} !!!!")
+                            print(f"\n{str(e)}")
+                            print(f"\nBody/HTML Above")
+                            raise e
+                    else:
+                        if printfailedmessage:
+                            print(f"\n{pdftext}\n")
+                        print(f"\n !!!! UNHANDLED EXCEPTION !!!!")
+                        print(f"\n{str(e)}")                     
+                        print(f"\nBody/HTML Above")
+                        raise e
+
                 send_mail(mail_sender,
                           mail_destination,
                           f"{msg.subject}",
@@ -92,7 +130,8 @@ if __name__ == '__main__':
 
     sender = os.environ.get("MAIL_SENDER")
     destination = os.environ.get("MAIL_DESTINATION")
-
+    printfailedmessage = (os.getenv('PRINT_FAILED_MSG', 'False') == 'True')
+    pdfkit_options = os.environ.get("WKHTMLTOPDF_OPTIONS")
     print("Running emails-html-to-pdf")
 
     process_mail(imap_url=server_imap,
@@ -101,4 +140,6 @@ if __name__ == '__main__':
                  imap_folder=folder,
                  mail_sender=sender,
                  mail_destination=destination,
-                 server_smtp=server_smtp)
+                 server_smtp=server_smtp,
+                 printfailedmessage=printfailedmessage,
+                 pdfkit_options=pdfkit_options)
