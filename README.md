@@ -23,6 +23,9 @@ The following parameters are used:
 * `MAIL_SENDER`: Address the mail with pdf should be sent from
 * `MAIL_DESTINATION`: Where to send the resulting pdf
 * `INTER_RUN_INTERVAL`: Time in seconds that the system should wait between running the script
+* `PRINT_FAILED_MSG`: Flag to control printing of error messages
+* `HOSTS`: Semicolon separated list of hosts that should be added to /etc/hosts to prevent dns lookup failures ([see](https://github.com/rob-luke/emails-html-to-pdf/pull/12))
+* `WKHTMLTOPDF_OPTIONS`: Python dict (json) representation of wkhtmltopdf_options that can be passed to the used pdfkit library
 
 ### Docker-Compose
 
