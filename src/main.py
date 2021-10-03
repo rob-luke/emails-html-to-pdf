@@ -67,12 +67,6 @@ def send_mail(
     smtp.quit()
 
 
-    
-    
-    
-    
-    
-    
 def process_mail(
     mark_read=True,
     num_emails_limit=50,
