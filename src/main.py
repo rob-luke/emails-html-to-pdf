@@ -53,7 +53,9 @@ def send_mail(
             part.set_payload(file.read())
         encoders.encode_base64(part)
         part.add_header(
-            "Content-Disposition", "attachment", filename=format(Path(path).name),
+            "Content-Disposition",
+            "attachment",
+            filename=format(Path(path).name),
         )
         msg.attach(part)
 
@@ -96,7 +98,9 @@ def process_mail(
     with MailBox(imap_url).login(imap_username, imap_password, imap_folder) as mailbox:
         for i, msg in enumerate(
             mailbox.fetch(
-                criteria=AND(seen=False), limit=num_emails_limit, mark_seen=False,
+                criteria=AND(seen=False),
+                limit=num_emails_limit,
+                mark_seen=False,
             )
         ):
             if len(msg.attachments) == 0:
