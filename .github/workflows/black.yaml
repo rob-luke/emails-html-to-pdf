@@ -1,0 +1,16 @@
+name: Formatting
+
+on: [pull_request]
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - uses: RojerGS/python-black-check@master
+        with:
+          path: 'src'
