@@ -28,6 +28,7 @@ The following parameters are used (defaults in parentheses):
 * `PRINT_FAILED_MSG`: Flag to control printing of error messages
 * `HOSTS`: Semicolon separated list of hosts that should be added to /etc/hosts to prevent dns lookup failures ([see](https://github.com/rob-luke/emails-html-to-pdf/pull/12))
 * `WKHTMLTOPDF_OPTIONS`: Python dict (json) representation of wkhtmltopdf_options that can be passed to the used pdfkit library
+* `MAIL_MESSAGE_FLAG`: Refers to the possible [imap-tools flags](https://github.com/ikvk/imap_tools/blob/7f8fd5e4f3976bbd2efa507843c577affa61d996/imap_tools/consts.py#L10). Values: SEEN (default), ANSWERED, FLAGGED, DELETED, DRAFT, RECENT
 
 ### Docker-Compose
 
@@ -76,3 +77,13 @@ Or if you prefer you can run the script manually by running these commands.
 poetry install
 poetry run src/main.py
 ```
+
+## Hints
+
+### Possible Errors
+
+#### PayPal Mail with HostNotFoundErrors
+* try adding `127.0.0.1 tracking.paypal.com` to the `HOSTS` env (check for missing domain in error log)
+* add `{"load-media-error-handling":"ignore"}` as `WKHTMLTOPDF_OPTIONS` option (could be the tracking pixel that is not beeing loaded
+* append `"enable-local-file-access":true` or `"load-error-handling":"ignore"`to `WKHTMLTOPDF_OPTIONS` if you get a `file://...` error
+* add `127.0.0.1 true` to the `HOSTS` env if you get a `http:///true/...` error
