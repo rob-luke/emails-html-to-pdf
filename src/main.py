@@ -168,7 +168,9 @@ def process_mail(
 
                 if mark_msg:
                     flag = None
-                    if mail_msg_flag == "ANSWERED":
+                    if mail_msg_flag == "SEEN":
+                        flag = MailMessageFlags.SEEN
+                    elif mail_msg_flag == "ANSWERED":
                         flag = MailMessageFlags.ANSWERED
                     elif mail_msg_flag == "FLAGGED":
                         flag = MailMessageFlags.FLAGGED
