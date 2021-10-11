@@ -43,7 +43,7 @@ version: "3.8"
 services:
 
   email2pdf:
-    image: ghcr.io/rob-luke/emails-html-to-pdf/image:latest
+    image: ghcr.io/rob-luke/emails-html-to-pdf:latest
     container_name: email2pdf
     environment:
       - IMAP_URL=imap.provider.com
