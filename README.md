@@ -28,7 +28,8 @@ The following parameters are used (defaults in parentheses):
 * `PRINT_FAILED_MSG`: Flag to control printing of error messages
 * `HOSTS`: [Semicolon separated list of hosts](https://github.com/rob-luke/emails-html-to-pdf/pull/12) that should be added to /etc/hosts to prevent dns lookup failures 
 * `WKHTMLTOPDF_OPTIONS`: Python dict (json) representation of wkhtmltopdf_options that can be passed to the used pdfkit library
-* `MAIL_MESSAGE_FLAG`: Refers to the possible [imap-tools flags](https://github.com/ikvk/imap_tools/blob/7f8fd5e4f3976bbd2efa507843c577affa61d996/imap_tools/consts.py#L10). Values: SEEN (default), ANSWERED, FLAGGED, DELETED, DRAFT, RECENT
+* `MAIL_MESSAGE_FLAG`: Flag to apply to email after processing.  
+    Must be one of [imap-tools flags](https://github.com/ikvk/imap_tools/blob/7f8fd5e4f3976bbd2efa507843c577affa61d996/imap_tools/consts.py#L10). Values: SEEN (default), ANSWERED, FLAGGED, DELETED, DRAFT, RECENT
 
 ### Docker-Compose
 
