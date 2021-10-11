@@ -68,7 +68,7 @@ def send_mail(
 
 
 def process_mail(
-    mark_read=True,
+    mark_msg=True,
     num_emails_limit=50,
     imap_url=None,
     imap_username=None,
@@ -81,6 +81,7 @@ def process_mail(
     mail_destination=None,
     printfailedmessage=None,
     pdfkit_options=None,
+    mail_msg_flag=None,
 ):
     print("Starting mail processing run", flush=True)
     if printfailedmessage:
@@ -164,8 +165,24 @@ def process_mail(
                     port=smtp_port,
                     use_tls=smtp_tls,
                 )
-                if mark_read:
-                    mailbox.flag(msg.uid, MailMessageFlags.SEEN, True)
+
+                if mark_msg:
+                    flag = None
+                    if mail_msg_flag == "SEEN":
+                        flag = MailMessageFlags.SEEN
+                    elif mail_msg_flag == "ANSWERED":
+                        flag = MailMessageFlags.ANSWERED
+                    elif mail_msg_flag == "FLAGGED":
+                        flag = MailMessageFlags.FLAGGED
+                    elif mail_msg_flag == "DELETED":
+                        flag = MailMessageFlags.DELETED
+                    elif mail_msg_flag == "DRAFT":
+                        flag = MailMessageFlags.DRAFT
+                    elif mail_msg_flag == "RECENT":
+                        flag = MailMessageFlags.RECENT
+                    else:
+                        flag = MailMessageFlags.SEEN
+                    mailbox.flag(msg.uid, flag, True)
                 os.remove(filename)
     print("Completed mail processing run\n\n", flush=True)
 
@@ -185,6 +202,7 @@ if __name__ == "__main__":
 
     printfailedmessage = os.getenv("PRINT_FAILED_MSG", "False") == "True"
     pdfkit_options = os.environ.get("WKHTMLTOPDF_OPTIONS")
+    mail_msg_flag = os.environ.get("MAIL_MESSAGE_FLAG")
 
     print("Running emails-html-to-pdf")
 
@@ -200,4 +218,5 @@ if __name__ == "__main__":
         pdfkit_options=pdfkit_options,
         smtp_tls=smtp_tls,
         smtp_port=smtp_port,
+        mail_msg_flag=mail_msg_flag,
     )
