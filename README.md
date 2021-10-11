@@ -34,7 +34,7 @@ The following parameters are used (defaults in parentheses):
 #### 1. Use prebuilt image
 
 This image is stored in the github registry, so you can use it without downloading this code repository.
-The image address is `ghcr.io/rob-luke/emails-html-to-pdf/image:latest`.
+The image address is `ghcr.io/rob-luke/emails-html-to-pdf:latest`.
 So to use it in a docker-compose it would be something like...
 
 ```yaml
