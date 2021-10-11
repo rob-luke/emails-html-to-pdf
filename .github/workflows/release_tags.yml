@@ -1,0 +1,40 @@
+name: Release Tag
+
+on:
+  push:
+    tags:
+      - '*'
+      
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create environmental variable for release version
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+      - name: Print release version information
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ env.RELEASE_VERSION }}   
+
+      - name: Build docker image
+        run: DOCKER_BUILDKIT=1 docker build --progress=plain -t ghcr.io/${GITHUB_REPOSITORY}/${GITHUB_REF##*/} .
+
+      - name: Tag image
+        run: docker tag ghcr.io/${GITHUB_REPOSITORY}/${GITHUB_REF##*/} ghcr.io/rob-luke/emails-html-to-pdf:${{ env.RELEASE_VERSION }}
+
+      - name: Push image to github
+        run: docker push ghcr.io/rob-luke/emails-html-to-pdf:${{ env.RELEASE_VERSION }}
