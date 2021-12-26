@@ -8,7 +8,6 @@ import json
 from imap_tools import MailBox, AND, MailMessageFlags
 import os
 
-
 def process_mail(
     output,
     mark_msg=True,
@@ -19,7 +18,8 @@ def process_mail(
     imap_folder=None,
     printfailedmessage=None,
     pdfkit_options=None,
-    mail_msg_flag=None
+    mail_msg_flag=None,
+    failed_messages_threshold=3
 ):
     logging.info("Starting mail processing run")
     if printfailedmessage:
@@ -34,6 +34,8 @@ def process_mail(
         "Server refused a stream",
     ]
 
+    failed_messages = 0
+
     with MailBox(imap_url).login(imap_username, imap_password, imap_folder) as mailbox:
         for i, msg in enumerate(
             mailbox.fetch(
@@ -42,85 +44,99 @@ def process_mail(
                 mark_seen=False,
             )
         ):
-            if len(msg.attachments) != 0:
-                logging.warning(f"Attachments found in {msg.subject}. Messages with attachments cannot be converted to PDF. Skipping.")
-                continue
-
-            if not msg.html.strip() == "":  # handle text only emails
-                logging.debug(f"Message '{msg.subject}' is HTML")
-                pdftext = (
-                    '<meta http-equiv="Content-type" content="text/html; charset=utf-8"/>'
-                    + msg.html
-                )
-            else:
-                logging.debug(f"Message '{msg.subject}' is plain text")
-                pdftext = msg.text
-
-            filename = replace_bad_chars(replace_unpleasant_chars(msg.subject))
-            filename = f"{filename[:50]}.pdf"
-            logging.debug(f"Using '{filename}' for PDF filename")
-
-            logging.info(f"Exporting message '{msg.subject}' to PDF")
-            options = {}
-            if pdfkit_options is not None:
-                # parse WKHTMLTOPDF Options to dict
-                options = json.loads(pdfkit_options)
             try:
-                pdfkit.from_string(pdftext, filename, options=options)
-            except OSError as e:
-                outputMessage = ""
-                if any([error in str(e) for error in PDF_CONTENT_ERRORS]):
-                    # allow pdfs with missing images if file got created
-                    if os.path.exists(filename):
-                        if printfailedmessage:
-                            outputMessage += f"\n{pdftext}\n"
-                        outputMessage += f"\n **** HANDLED EXCEPTION ****"
-                        outputMessage += f"\n\n{str(e)}\n"
-                        outputMessage += f"\nOne or more remote resources failed to load, continuing without them."
-                        logging.warning(outputMessage)
+                if len(msg.attachments) != 0:
+                    logging.warning(f"Attachments found in {msg.subject}. Messages with attachments cannot be converted to PDF. Skipping.")
+                    continue
 
+                if not msg.html.strip() == "":  # handle text only emails
+                    logging.debug(f"Message '{msg.subject}' is HTML")
+                    pdftext = (
+                        '<meta http-equiv="Content-type" content="text/html; charset=utf-8"/>'
+                        + msg.html
+                    )
+                else:
+                    logging.debug(f"Message '{msg.subject}' is plain text")
+                    pdftext = msg.text
+
+                filename = replace_bad_chars(replace_unpleasant_chars(msg.subject))
+                filename = f"{filename[:50]}.pdf"
+                logging.debug(f"Using '{filename}' for PDF filename")
+
+                logging.info(f"Exporting message '{msg.subject}' to PDF")
+                options = {}
+                if pdfkit_options is not None:
+                    # parse WKHTMLTOPDF Options to dict
+                    options = json.loads(pdfkit_options)
+                try:
+                    pdfkit.from_string(pdftext, filename, options=options)
+                except OSError as e:
+                    outputMessage = ""
+                    if any([error in str(e) for error in PDF_CONTENT_ERRORS]):
+                        # allow pdfs with missing images if file got created
+                        if os.path.exists(filename):
+                            if printfailedmessage:
+                                outputMessage += f"\n{pdftext}\n"
+                            outputMessage += f"\n **** HANDLED EXCEPTION ****"
+                            outputMessage += f"\n\n{str(e)}\n"
+                            outputMessage += f"\nOne or more remote resources failed to load, continuing without them."
+                            logging.warning(outputMessage)
+
+                        else:
+                            if printfailedmessage:
+                                outputMessage += f"\n{pdftext}\n"
+                            outputMessage += f"\n !!!! UNHANDLED EXCEPTION with PDF Content Errors: {PDF_CONTENT_ERRORS} !!!!"
+                            outputMessage += f"\n{str(e)}"
+                            logging.error(outputMessage)
+                            raise e
                     else:
                         if printfailedmessage:
                             outputMessage += f"\n{pdftext}\n"
-                        outputMessage += f"\n !!!! UNHANDLED EXCEPTION with PDF Content Errors: {PDF_CONTENT_ERRORS} !!!!"
+                        outputMessage += f"\n !!!! UNHANDLED EXCEPTION !!!!"
                         outputMessage += f"\n{str(e)}"
                         logging.error(outputMessage)
                         raise e
-                else:
-                    if printfailedmessage:
-                        outputMessage += f"\n{pdftext}\n"
-                    outputMessage += f"\n !!!! UNHANDLED EXCEPTION !!!!"
-                    outputMessage += f"\n{str(e)}"
-                    logging.error(outputMessage)
-                    raise e
 
-            output.process(msg, [filename])
+                output.process(msg, [filename])
 
-            if mark_msg:
-                flag = None
-                if mail_msg_flag == "SEEN":
-                    flag = MailMessageFlags.SEEN
-                elif mail_msg_flag == "ANSWERED":
-                    flag = MailMessageFlags.ANSWERED
-                elif mail_msg_flag == "FLAGGED":
-                    flag = MailMessageFlags.FLAGGED
-                elif mail_msg_flag == "DELETED":
-                    flag = MailMessageFlags.DELETED
-                elif mail_msg_flag == "DRAFT":
-                    flag = MailMessageFlags.DRAFT
-                elif mail_msg_flag == "RECENT":
-                    flag = MailMessageFlags.RECENT
-                else:
-                    logging.warning(f"Unrecognised message flag '{mail_msg_flag}'. Using 'SEEN' instead.")
-                    flag = MailMessageFlags.SEEN
-                logging.info(f"Marking processed message as '{mail_msg_flag}'")
-                mailbox.flag(msg.uid, flag, True)
-            
-            logging.debug(f"Deleting processed PDF '{filename}'...")
-            os.remove(filename)
-            logging.info(f"Finished processing of message '{msg.subject}'")
+                if mark_msg:
+                    flag = None
+                    if mail_msg_flag == "SEEN":
+                        flag = MailMessageFlags.SEEN
+                    elif mail_msg_flag == "ANSWERED":
+                        flag = MailMessageFlags.ANSWERED
+                    elif mail_msg_flag == "FLAGGED":
+                        flag = MailMessageFlags.FLAGGED
+                    elif mail_msg_flag == "DELETED":
+                        flag = MailMessageFlags.DELETED
+                    elif mail_msg_flag == "DRAFT":
+                        flag = MailMessageFlags.DRAFT
+                    elif mail_msg_flag == "RECENT":
+                        flag = MailMessageFlags.RECENT
+                    else:
+                        logging.warning(f"Unrecognised message flag '{mail_msg_flag}'. Using 'SEEN' instead.")
+                        flag = MailMessageFlags.SEEN
+                    logging.info(f"Marking processed message as '{mail_msg_flag}'")
+                    mailbox.flag(msg.uid, flag, True)
+                
+                logging.debug(f"Deleting processed PDF '{filename}'...")
+                os.remove(filename)
+                logging.info(f"Finished processing of message '{msg.subject}'")
+            except Exception as e:
+                logging.exception(str(e))
+                failed_messages += 1
 
-    logging.info("Completed mail processing run")
+                if failed_messages >= failed_messages_threshold:
+                    errorMessage = f"The number of errors has reached the failed messages threshold. Processing will be halted. Please resolve issues before resuming."
+                    logging.critical(errorMessage)
+                    raise RuntimeError(errorMessage)
+
+                logging.info("Continuing with next message")
+
+    if failed_messages > 0:
+        logging.warn("Completed mail processing run with one or more errors")
+    else:
+        logging.info("Completed mail processing run")
 
 
 if __name__ == "__main__":
