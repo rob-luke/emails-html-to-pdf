@@ -8,6 +8,7 @@ import json
 from imap_tools import MailBox, AND, MailMessageFlags
 import os
 
+
 def process_mail(
     output,
     mark_msg=True,
@@ -19,7 +20,7 @@ def process_mail(
     printfailedmessage=None,
     pdfkit_options=None,
     mail_msg_flag=None,
-    failed_messages_threshold=3
+    failed_messages_threshold=3,
 ):
     logging.info("Starting mail processing run")
     if printfailedmessage:
@@ -46,7 +47,9 @@ def process_mail(
         ):
             try:
                 if len(msg.attachments) != 0:
-                    logging.warning(f"Attachments found in {msg.subject}. Messages with attachments cannot be converted to PDF. Skipping.")
+                    logging.warning(
+                        f"Attachments found in {msg.subject}. Messages with attachments cannot be converted to PDF. Skipping."
+                    )
                     continue
 
                 if not msg.html.strip() == "":  # handle text only emails
@@ -114,11 +117,13 @@ def process_mail(
                     elif mail_msg_flag == "RECENT":
                         flag = MailMessageFlags.RECENT
                     else:
-                        logging.warning(f"Unrecognised message flag '{mail_msg_flag}'. Using 'SEEN' instead.")
+                        logging.warning(
+                            f"Unrecognised message flag '{mail_msg_flag}'. Using 'SEEN' instead."
+                        )
                         flag = MailMessageFlags.SEEN
                     logging.info(f"Marking processed message as '{mail_msg_flag}'")
                     mailbox.flag(msg.uid, flag, True)
-                
+
                 logging.debug(f"Deleting processed PDF '{filename}'...")
                 os.remove(filename)
                 logging.info(f"Finished processing of message '{msg.subject}'")
@@ -142,43 +147,57 @@ def process_mail(
 if __name__ == "__main__":
 
     log_level = os.environ.get("LOG_LEVEL", "INFO")
-    if log_level == 'DEBUG':
+    if log_level == "DEBUG":
         log_level = logging.DEBUG
-    elif log_level == 'INFO':
+    elif log_level == "INFO":
         log_level = logging.INFO
-    elif log_level == 'WARNING':
+    elif log_level == "WARNING":
         log_level = logging.WARNING
-    elif log_level == 'ERROR':
+    elif log_level == "ERROR":
         log_level = logging.ERROR
     else:
-        logging.warning(f"Unrecognised logging level '{log_level}'. Defaulting to INFO level.")
+        logging.warning(
+            f"Unrecognised logging level '{log_level}'. Defaulting to INFO level."
+        )
         log_level = logging.INFO
-    logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=log_level)
+    logging.basicConfig(
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=log_level
+    )
 
     server_imap = os.environ.get("IMAP_URL")
     imap_username = os.environ.get("IMAP_USERNAME")
     imap_password = os.environ.get("IMAP_PASSWORD")
     folder = os.environ.get("IMAP_FOLDER")
 
-    output_type = os.getenv('OUTPUT_TYPE', 'mailto')
+    output_type = os.getenv("OUTPUT_TYPE", "mailto")
 
     printfailedmessage = os.getenv("PRINT_FAILED_MSG", "False") == "True"
     pdfkit_options = os.environ.get("WKHTMLTOPDF_OPTIONS")
     mail_msg_flag = os.environ.get("MAIL_MESSAGE_FLAG")
 
-    output=None
-    if output_type == 'mailto':
+    output = None
+    if output_type == "mailto":
         server_smtp = os.environ.get("SMTP_SERVER")
         smtp_username = os.environ.get("SMTP_USERNAME", imap_username)
         smtp_password = os.environ.get("SMTP_PASSWORD", imap_password)
         sender = os.environ.get("MAIL_SENDER", smtp_username)
         destination = os.environ.get("MAIL_DESTINATION")
         smtp_port = os.environ.get("SMTP_PORT", 587)
-        smtp_encryption = os.environ.get("SMTP_ENCRYPTION", SendOutputByEmail.SMTP_ENCRYPTION_STARTTLS)
-        output=SendOutputByEmail(sender, destination, server_smtp, smtp_port, smtp_username, smtp_password, smtp_encryption)
-    elif output_type == 'folder':
+        smtp_encryption = os.environ.get(
+            "SMTP_ENCRYPTION", SendOutputByEmail.SMTP_ENCRYPTION_STARTTLS
+        )
+        output = SendOutputByEmail(
+            sender,
+            destination,
+            server_smtp,
+            smtp_port,
+            smtp_username,
+            smtp_password,
+            smtp_encryption,
+        )
+    elif output_type == "folder":
         output_folder = os.getenv("OUTPUT_FOLDER")
-        output=OutputToFolder(output_folder)
+        output = OutputToFolder(output_folder)
 
     if not output:
         raise ValueError(f"Unknown output type '{output_type}'")
@@ -194,5 +213,5 @@ if __name__ == "__main__":
             imap_folder=folder,
             printfailedmessage=printfailedmessage,
             pdfkit_options=pdfkit_options,
-            mail_msg_flag=mail_msg_flag
+            mail_msg_flag=mail_msg_flag,
         )
