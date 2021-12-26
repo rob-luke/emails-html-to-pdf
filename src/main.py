@@ -156,17 +156,11 @@ if __name__ == "__main__":
     logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=log_level)
 
     server_imap = os.environ.get("IMAP_URL")
-    username = os.environ.get("IMAP_USERNAME")
-    password = os.environ.get("IMAP_PASSWORD")
+    imap_username = os.environ.get("IMAP_USERNAME")
+    imap_password = os.environ.get("IMAP_PASSWORD")
     folder = os.environ.get("IMAP_FOLDER")
 
     output_type = os.getenv('OUTPUT_TYPE', 'mailto')
-
-    server_smtp = os.environ.get("SMTP_URL")
-    sender = os.environ.get("MAIL_SENDER")
-    destination = os.environ.get("MAIL_DESTINATION")
-    smtp_port = os.getenv("SMTP_PORT", 587)
-    smtp_encryption = os.getenv("SMTP_ENCRYPTION", SendOutputByEmail.SMTP_ENCRYPTION_STARTTLS)
 
     printfailedmessage = os.getenv("PRINT_FAILED_MSG", "False") == "True"
     pdfkit_options = os.environ.get("WKHTMLTOPDF_OPTIONS")
@@ -174,7 +168,14 @@ if __name__ == "__main__":
 
     output=None
     if output_type == 'mailto':
-        output=SendOutputByEmail(sender, destination, server_smtp, smtp_port, username, password, smtp_encryption)
+        server_smtp = os.environ.get("SMTP_SERVER")
+        smtp_username = os.environ.get("SMTP_USERNAME", imap_username)
+        smtp_password = os.environ.get("SMTP_PASSWORD", imap_password)
+        sender = os.environ.get("MAIL_SENDER", smtp_username)
+        destination = os.environ.get("MAIL_DESTINATION")
+        smtp_port = os.environ.get("SMTP_PORT", 587)
+        smtp_encryption = os.environ.get("SMTP_ENCRYPTION", SendOutputByEmail.SMTP_ENCRYPTION_STARTTLS)
+        output=SendOutputByEmail(sender, destination, server_smtp, smtp_port, smtp_username, smtp_password, smtp_encryption)
     elif output_type == 'folder':
         output_folder = os.getenv("OUTPUT_FOLDER")
         output=OutputToFolder(output_folder)
@@ -188,8 +189,8 @@ if __name__ == "__main__":
         process_mail(
             output=output,
             imap_url=server_imap,
-            imap_username=username,
-            imap_password=password,
+            imap_username=imap_username,
+            imap_password=imap_password,
             imap_folder=folder,
             printfailedmessage=printfailedmessage,
             pdfkit_options=pdfkit_options,
