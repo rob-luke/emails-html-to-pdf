@@ -102,3 +102,6 @@ extension installed, you should be prompted to open the devcontainer when openin
 For debugging, copy the `env.example` file and rename it to just `env`. Then edit the variables inside
 to the required values for testing. These will be automatically configured when launching via either the
 debug menu or by pressing F5. The `env` file is included in the gitignore.
+
+Formatting issues will cause the github build to fail. To fix formatting issues in your script, open the file
+and run the "Format Document" command.
