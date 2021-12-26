@@ -38,22 +38,29 @@ class SendOutputByEmail:
         port (int): port number
         username (str): server auth username
         password (str): server auth password
-        use_tls (bool): use TLS mode
+        encryption (str): Type of encryption to use (if any)
     """
+    SMTP_ENCRYPTION_STARTTLS="STARTTLS"
+    SMTP_ENCRYPTION_SSL="SSL"
 
-    def __init__(self, mail_from, mail_to, server=None, port=None, username=None, password=None, use_tls=None):
+    def __init__(self, mail_from, mail_to, server, port, username, password, encryption):
         self.__mail_from = mail_from
         self.__mail_to = mail_to
         self.__server = server
         self.__port = port
         self.__username = username
         self.__password = password
-        self.__use_tls = use_tls
+        self.__encryption = encryption
 
     def __enter__(self):
-        self.__smtp = smtplib.SMTP(self.__server, self.__port)
-        if self.__use_tls:
+        if self.__encryption == self.SMTP_ENCRYPTION_SSL:
+            self.__smtp = smtplib.SMTP_SSL(self.__server, self.__port)
+        else:
+            self.__smtp = smtplib.SMTP(self.__server, self.__port)
+
+        if self.__encryption == self.SMTP_ENCRYPTION_STARTTLS:
             self.__smtp.starttls()
+
         self.__smtp.login(self.__username, self.__password)
         return self
 

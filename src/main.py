@@ -125,7 +125,7 @@ if __name__ == "__main__":
     sender = os.environ.get("MAIL_SENDER")
     destination = os.environ.get("MAIL_DESTINATION")
     smtp_port = os.getenv("SMTP_PORT", 587)
-    smtp_tls = os.getenv("SMTP_TLS", True)
+    smtp_encryption = os.getenv("SMTP_ENCRYPTION", SendOutputByEmail.SMTP_ENCRYPTION_STARTTLS)
 
     printfailedmessage = os.getenv("PRINT_FAILED_MSG", "False") == "True"
     pdfkit_options = os.environ.get("WKHTMLTOPDF_OPTIONS")
@@ -133,7 +133,7 @@ if __name__ == "__main__":
 
     output=None
     if output_type == 'mailto':
-        output=SendOutputByEmail(sender, destination, server_smtp, smtp_port, username, password, smtp_tls)
+        output=SendOutputByEmail(sender, destination, server_smtp, smtp_port, username, password, smtp_encryption)
 
     if not output:
         raise ValueError("Unknown output type '{output_type}'")
