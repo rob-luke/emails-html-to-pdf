@@ -62,29 +62,29 @@ class SendOutputByEmail(OutputProcessor):
         self.__encryption = encryption
 
     def __enter__(self):
-        self.__logger.info(
+        self._logger.info(
             f"Connecting to SMTP server {self.__server}:{self.__port}..."
         )
         if self.__encryption == self.SMTP_ENCRYPTION_SSL:
-            self.__logger.debug(f"Using SSL encryption for SMTP")
+            self._logger.debug(f"Using SSL encryption for SMTP")
             self.__smtp = smtplib.SMTP_SSL(self.__server, self.__port)
         else:
             self.__smtp = smtplib.SMTP(self.__server, self.__port)
 
         if self.__encryption == self.SMTP_ENCRYPTION_STARTTLS:
-            self.__logger.debug(f"Using STARTTLS encryption for SMTP")
+            self._logger.debug(f"Using STARTTLS encryption for SMTP")
             self.__smtp.starttls()
 
-        self.__logger.debug(f"Logging in to SMTP server as {self.__username}...")
+        self._logger.debug(f"Logging in to SMTP server as {self.__username}...")
         self.__smtp.login(self.__username, self.__password)
 
-        self.__logger.info("SMTP setup successful")
+        self._logger.info("SMTP setup successful")
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
-        self.__logger.debug("Closing SMTP server connection...")
+        self._logger.debug("Closing SMTP server connection...")
         self.__smtp.quit()
-        self.__logger.info("SMTP server closed gracefully")
+        self._logger.info("SMTP server closed gracefully")
 
     def process(self, originalMessage, generatedPdfs):
         logging.debug(f"Building output email for '{originalMessage.subject}'...")
