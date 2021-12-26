@@ -1,87 +1,23 @@
 #!/usr/bin/env python
 
+from outputs import SendOutputByEmail
 import pdfkit
 import json
 from imap_tools import MailBox, AND, MailMessageFlags
 import os
-import smtplib
-from pathlib import Path
-from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
-from email.mime.text import MIMEText
-from email.utils import formatdate
-from email import encoders
-
-
-def send_mail(
-    send_from,
-    send_to,
-    subject,
-    message,
-    files=[],
-    server=None,
-    port=None,
-    username=None,
-    password=None,
-    use_tls=None,
-):
-    """Compose and send email with provided info and attachments.
-
-    Args:
-        send_from (str): from name
-        send_to (str): to name(s)
-        subject (str): message title
-        message (str): message body
-        files (list[str]): list of file paths to be attached to email
-        server (str): mail server host name
-        port (int): port number
-        username (str): server auth username
-        password (str): server auth password
-        use_tls (bool): use TLS mode
-    """
-    msg = MIMEMultipart()
-    msg["From"] = send_from
-    msg["To"] = send_to
-    msg["Date"] = formatdate(localtime=True)
-    msg["Subject"] = subject
-
-    msg.attach(MIMEText(message))
-
-    for path in files:
-        part = MIMEBase("application", "octet-stream")
-        with open(path, "rb") as file:
-            part.set_payload(file.read())
-        encoders.encode_base64(part)
-        part.add_header(
-            "Content-Disposition",
-            "attachment",
-            filename=format(Path(path).name),
-        )
-        msg.attach(part)
-
-    smtp = smtplib.SMTP(server, port)
-    if use_tls:
-        smtp.starttls()
-    smtp.login(username, password)
-    smtp.sendmail(send_from, send_to, msg.as_string())
-    smtp.quit()
 
 
 def process_mail(
+    output,
     mark_msg=True,
     num_emails_limit=50,
     imap_url=None,
     imap_username=None,
     imap_password=None,
     imap_folder=None,
-    mail_sender=None,
-    server_smtp=None,
-    smtp_tls=None,
-    smtp_port=None,
-    mail_destination=None,
     printfailedmessage=None,
     pdfkit_options=None,
-    mail_msg_flag=None,
+    mail_msg_flag=None
 ):
     print("Starting mail processing run", flush=True)
     if printfailedmessage:
@@ -153,18 +89,7 @@ def process_mail(
                         print(f"\nBody/HTML Above")
                         raise e
 
-                send_mail(
-                    mail_sender,
-                    mail_destination,
-                    f"{msg.subject}",
-                    f"Converted PDF of email from {msg.from_} on {msg.date_str} wih topic {msg.subject}. Content below.\n\n\n\n{msg.text}",
-                    files=[filename],
-                    server=server_smtp,
-                    username=imap_username,
-                    password=imap_password,
-                    port=smtp_port,
-                    use_tls=smtp_tls,
-                )
+                output.process(msg, [filename])
 
                 if mark_msg:
                     flag = None
@@ -194,6 +119,8 @@ if __name__ == "__main__":
     password = os.environ.get("IMAP_PASSWORD")
     folder = os.environ.get("IMAP_FOLDER")
 
+    output_type = os.getenv('OUTPUT_TYPE', 'mailto')
+
     server_smtp = os.environ.get("SMTP_URL")
     sender = os.environ.get("MAIL_SENDER")
     destination = os.environ.get("MAIL_DESTINATION")
@@ -204,19 +131,23 @@ if __name__ == "__main__":
     pdfkit_options = os.environ.get("WKHTMLTOPDF_OPTIONS")
     mail_msg_flag = os.environ.get("MAIL_MESSAGE_FLAG")
 
+    output=None
+    if output_type == 'mailto':
+        output=SendOutputByEmail(sender, destination, server_smtp, smtp_port, username, password, smtp_tls)
+
+    if not output:
+        raise ValueError("Unknown output type '{output_type}'")
+
     print("Running emails-html-to-pdf")
 
-    process_mail(
-        imap_url=server_imap,
-        imap_username=username,
-        imap_password=password,
-        imap_folder=folder,
-        mail_sender=sender,
-        mail_destination=destination,
-        server_smtp=server_smtp,
-        printfailedmessage=printfailedmessage,
-        pdfkit_options=pdfkit_options,
-        smtp_tls=smtp_tls,
-        smtp_port=smtp_port,
-        mail_msg_flag=mail_msg_flag,
-    )
+    with output:
+        process_mail(
+            output=output,
+            imap_url=server_imap,
+            imap_username=username,
+            imap_password=password,
+            imap_folder=folder,
+            printfailedmessage=printfailedmessage,
+            pdfkit_options=pdfkit_options,
+            mail_msg_flag=mail_msg_flag
+        )
