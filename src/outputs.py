@@ -79,6 +79,7 @@ class SendOutputByEmail:
         self.__logger.info("SMTP server closed gracefully")
 
     def process(self, originalMessage, generatedPdfs):
+        logging.debug(f"Building output email for '{originalMessage.subject}'...")
         msg = MIMEMultipart()
         msg["From"] = self.__mail_from
         msg["To"] = self.__mail_to
@@ -100,4 +101,6 @@ class SendOutputByEmail:
             )
             msg.attach(part)
 
+        logging.info(f"Sending PDF output for '{originalMessage.subject}' to '{self.__mail_to}...")
         self.__smtp.sendmail(self.__mail_from, self.__mail_to, msg.as_string())
+        logging.info(f"Sent PDF output for '{originalMessage.subject}' to '{self.__mail_to}...")
