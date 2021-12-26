@@ -10,7 +10,8 @@
             "request": "launch",
             "cwd": "${workspaceFolder}/src",
             "program": "./main.py",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/env"
         }
     ]
 }
