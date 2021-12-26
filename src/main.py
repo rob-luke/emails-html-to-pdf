@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import logging
 from outputs import SendOutputByEmail
 import pdfkit
 import json
@@ -19,9 +20,9 @@ def process_mail(
     pdfkit_options=None,
     mail_msg_flag=None
 ):
-    print("Starting mail processing run", flush=True)
+    logging.info("Starting mail processing run")
     if printfailedmessage:
-        print("*On failure, the Body of the email will be printed*")
+        logging.warn("*On failure, the Body of the email will be printed*")
 
     PDF_CONTENT_ERRORS = [
         "ContentNotFoundError",
@@ -41,7 +42,7 @@ def process_mail(
             )
         ):
             if len(msg.attachments) == 0:
-                print(f"\nNo attachments in: {msg.subject}")
+                logging.debug(f"\nNo attachments in: {msg.subject}")
                 if not msg.html.strip() == "":  # handle text only emails
                     pdftext = (
                         '<meta http-equiv="Content-type" content="text/html; charset=utf-8"/>'
@@ -50,10 +51,10 @@ def process_mail(
                 else:
                     pdftext = msg.text
                 filename = f'{msg.subject.replace(".", "_").replace(" ", "-")[:50]}.pdf'
-                print(f"\nPDF: {filename}")
+                logging.debug(f"\nPDF: {filename}")
                 for bad_char in ["/", "*", ":", "<", ">", "|", '"', "’", "–"]:
                     filename = filename.replace(bad_char, "_")
-                print(f"\nPDF: {filename}")
+                logging.debug(f"\nPDF: {filename}")
                 options = {}
                 if pdfkit_options is not None:
                     # parse WKHTMLTOPDF Options to dict
@@ -61,32 +62,32 @@ def process_mail(
                 try:
                     pdfkit.from_string(pdftext, filename, options=options)
                 except OSError as e:
+                    outputMessage = ""
                     if any([error in str(e) for error in PDF_CONTENT_ERRORS]):
                         # allow pdfs with missing images if file got created
                         if os.path.exists(filename):
                             if printfailedmessage:
-                                print(f"\n{pdftext}\n")
-                            print(f"\n **** HANDLED EXCEPTION ****")
-                            print(f"\n\n{str(e)}\n")
-                            print(
-                                f"\nError with images in file, continuing without them.  Email Body/HTML Above"
-                            )
+                                outputMessage += f"\n{pdftext}\n"
+                            outputMessage += f"\n **** HANDLED EXCEPTION ****"
+                            outputMessage += f"\n\n{str(e)}\n"
+                            outputMessage += f"\nError with images in file, continuing without them.  Email Body/HTML Above"
+                            logging.warn(outputMessage)
 
                         else:
                             if printfailedmessage:
-                                print(f"\n{pdftext}\n")
-                            print(
-                                f"\n !!!! UNHANDLED EXCEPTION with PDF Content Errors: {PDF_CONTENT_ERRORS} !!!!"
-                            )
-                            print(f"\n{str(e)}")
-                            print(f"\nBody/HTML Above")
+                                outputMessage += f"\n{pdftext}\n"
+                            outputMessage += f"\n !!!! UNHANDLED EXCEPTION with PDF Content Errors: {PDF_CONTENT_ERRORS} !!!!"
+                            outputMessage += f"\n{str(e)}"
+                            outputMessage += f"\nBody/HTML Above"
+                            logging.error(outputMessage)
                             raise e
                     else:
                         if printfailedmessage:
-                            print(f"\n{pdftext}\n")
-                        print(f"\n !!!! UNHANDLED EXCEPTION !!!!")
-                        print(f"\n{str(e)}")
-                        print(f"\nBody/HTML Above")
+                            outputMessage += f"\n{pdftext}\n"
+                        outputMessage += f"\n !!!! UNHANDLED EXCEPTION !!!!"
+                        outputMessage += f"\n{str(e)}"
+                        outputMessage += f"\nBody/HTML Above"
+                        logging.error(outputMessage)
                         raise e
 
                 output.process(msg, [filename])
@@ -109,10 +110,24 @@ def process_mail(
                         flag = MailMessageFlags.SEEN
                     mailbox.flag(msg.uid, flag, True)
                 os.remove(filename)
-    print("Completed mail processing run\n\n", flush=True)
+    logging.info("Completed mail processing run")
 
 
 if __name__ == "__main__":
+
+    log_level = os.environ.get("LOG_LEVEL", "INFO")
+    if log_level == 'DEBUG':
+        log_level = logging.DEBUG
+    elif log_level == 'INFO':
+        log_level = logging.INFO
+    elif log_level == 'WARN':
+        log_level = logging.WARN
+    elif log_level == 'ERROR':
+        log_level = logging.ERROR
+    else:
+        logging.warn(f"Unrecognised logging level '{log_level}'. Defaulting to INFO level.")
+        log_level = logging.INFO
+    logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=log_level)
 
     server_imap = os.environ.get("IMAP_URL")
     username = os.environ.get("IMAP_USERNAME")
@@ -136,9 +151,9 @@ if __name__ == "__main__":
         output=SendOutputByEmail(sender, destination, server_smtp, smtp_port, username, password, smtp_encryption)
 
     if not output:
-        raise ValueError("Unknown output type '{output_type}'")
+        raise ValueError(f"Unknown output type '{output_type}'")
 
-    print("Running emails-html-to-pdf")
+    logging.info("Running emails-html-to-pdf")
 
     with output:
         process_mail(
