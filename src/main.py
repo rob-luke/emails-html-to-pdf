@@ -167,8 +167,8 @@ def process_mail(
                     use_tls=smtp_tls,
                 )
 
-                if mark_msg and mail_msg_flag in MailMessageFlags.all:
-                    mailbox.flag(msg.uid, mail_msg_flag, True)
+                if mark_msg and mail_msg_flag and mail_msg_flag[0] in MailMessageFlags.all:
+                    mailbox.flag(msg.uid, mail_msg_flag[0], mail_msg_flag[1])
                 os.remove(filename)
     print("Completed mail processing run\n\n", flush=True)
 
@@ -176,20 +176,24 @@ def process_mail(
 def _get_mail_message_flag():
     """Determine mail message flag to set on processed emails from environment variable.
     
-    Only valid options are "ANSWERED", "FLAGGED", "DELETED" and "SEEN". Any other values will default to "SEEN".
+    Only valid options are "ANSWERED", "FLAGGED", "UNFLAGGED", "DELETED" and "SEEN". Any other values will default to "SEEN".
 
     DRAFT flag is excluded as it can cause strange behaviour with inbound mail becoming outbound.
     RECENT flag is excluded as it is read-only
+
+    Returns a tuple. The first part is the flag and the second is if it should be added (True) or removed (False).
     """
     mail_message_flag = os.environ.get("MAIL_MESSAGE_FLAG", 'SEEN').upper()
     if mail_message_flag == "ANSWERED":
-        return MailMessageFlags.ANSWERED
+        return (MailMessageFlags.ANSWERED, True)
     elif mail_message_flag == "FLAGGED":
-        return MailMessageFlags.FLAGGED
+        return (MailMessageFlags.FLAGGED, True)
+    elif mail_message_flag == "UNFLAGGED":
+        return (MailMessageFlags.FLAGGED, False)
     elif mail_message_flag == "DELETED":
-        return MailMessageFlags.DELETED
+        return (MailMessageFlags.DELETED, True)
     else:
-        return MailMessageFlags.SEEN
+        return (MailMessageFlags.SEEN, True)
 
 
 def _get_imap_filter(mail_message_flag):
@@ -203,13 +207,13 @@ def _get_imap_filter(mail_message_flag):
         return raw_filter_criteria
 
     # No value specified so generate a default from the message flag
-    if mail_message_flag == MailMessageFlags.SEEN:
-        return AND(seen=False)
-    elif mail_message_flag == MailMessageFlags.ANSWERED:
-        return AND(answered=False)
-    elif mail_message_flag == MailMessageFlags.FLAGGED:
-        return AND(flagged=False)
-    elif mail_message_flag == MailMessageFlags.DELETED:
+    if mail_message_flag[0] == MailMessageFlags.SEEN:
+        return AND(seen=(not mail_message_flag[1]))
+    elif mail_message_flag[0] == MailMessageFlags.ANSWERED:
+        return AND(answered=(not mail_message_flag[1]))
+    elif mail_message_flag[0] == MailMessageFlags.FLAGGED:
+        return AND(flagged=(not mail_message_flag[1]))
+    elif mail_message_flag[0] == MailMessageFlags.DELETED and mail_message_flag[1]:
         # Search for undeleted while possible doesn't make sense
         # so just search for all
         return AND(all=True)
