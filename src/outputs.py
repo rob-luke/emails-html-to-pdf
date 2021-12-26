@@ -6,12 +6,18 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
+import os
 from pathlib import Path
 import smtplib
 import logging
+import shutil
+
+from filenameutils import replace_bad_chars, replace_unpleasant_chars
 
 
-class AbstractOutput:
+class OutputProcessor:
+
+    _logger = logging.getLogger(__name__)
 
     @abstractmethod
     def process(self, originalMessage, generatedPdfs):
@@ -29,7 +35,7 @@ class AbstractOutput:
     def __exit__(self, exc_type, exc_value, exc_traceback):
         pass
 
-class SendOutputByEmail:
+class SendOutputByEmail(OutputProcessor):
     """Sends output to an email address
 
     Args:
@@ -43,8 +49,6 @@ class SendOutputByEmail:
     """
     SMTP_ENCRYPTION_STARTTLS="STARTTLS"
     SMTP_ENCRYPTION_SSL="SSL"
-
-    __logger = logging.getLogger(__name__)
 
     def __init__(self, mail_from, mail_to, server, port, username, password, encryption):
         self.__mail_from = mail_from
@@ -104,3 +108,27 @@ class SendOutputByEmail:
         logging.info(f"Sending PDF output for '{originalMessage.subject}' to '{self.__mail_to}...")
         self.__smtp.sendmail(self.__mail_from, self.__mail_to, msg.as_string())
         logging.info(f"Sent PDF output for '{originalMessage.subject}' to '{self.__mail_to}...")
+
+class OutputToFolder(OutputProcessor):
+
+    def __init__(self, output_folder):
+        self.__output_folder = output_folder
+
+    def process(self, originalMessage, generatedPdfs):
+        logging.debug(f"Copying output for '{originalMessage.subject}' to output folder...")
+        output_base_name = f"{originalMessage.date.strftime('%Y%m%d%H%M%S')}_{originalMessage.subject}"
+        output_base_name = replace_bad_chars(replace_unpleasant_chars(output_base_name))
+        output_base_name = f"{output_base_name[:50]}"
+
+        if len(generatedPdfs) == 1:
+            self._output_file(generatedPdfs[0], f"{output_base_name}.pdf")
+        else:
+            for i, file in enumerate(generatedPdfs):
+                self._output_file(file, f"{output_base_name}_{i}.pdf")
+        logging.info(f"Finished copying output for '{originalMessage.subject}' to output folder")
+        
+    def _output_file(self, source, destination):
+        full_destination = os.path.join(self.__output_folder, destination)
+        logging.debug(f"Copying file '{source}' to '{full_destination}'...")
+        shutil.copyfile(source, full_destination)
+        logging.debug(f"Copied file '{source}' to '{full_destination}'")

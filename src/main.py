@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 import logging
-from outputs import SendOutputByEmail
+from filenameutils import replace_bad_chars, replace_unpleasant_chars
+from outputs import OutputToFolder, SendOutputByEmail
 import pdfkit
 import json
 from imap_tools import MailBox, AND, MailMessageFlags
@@ -55,9 +56,8 @@ def process_mail(
                 logging.debug(f"Message '{msg.subject}' is plain text")
                 pdftext = msg.text
 
-            filename = f'{msg.subject.replace(".", "_").replace(" ", "-")[:50]}.pdf'
-            for bad_char in ["/", "*", ":", "<", ">", "|", '"', "’", "–"]:
-                filename = filename.replace(bad_char, "_")
+            filename = replace_bad_chars(replace_unpleasant_chars(msg.subject))
+            filename = f"{filename[:50]}.pdf"
             logging.debug(f"Using '{filename}' for PDF filename")
 
             logging.info(f"Exporting message '{msg.subject}' to PDF")
@@ -159,6 +159,9 @@ if __name__ == "__main__":
     output=None
     if output_type == 'mailto':
         output=SendOutputByEmail(sender, destination, server_smtp, smtp_port, username, password, smtp_encryption)
+    elif output_type == 'folder':
+        output_folder = os.getenv("OUTPUT_FOLDER")
+        output=OutputToFolder(output_folder)
 
     if not output:
         raise ValueError(f"Unknown output type '{output_type}'")
