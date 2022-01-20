@@ -88,3 +88,20 @@ poetry run src/main.py
 * add `{"load-media-error-handling":"ignore"}` as `WKHTMLTOPDF_OPTIONS` option (could be the tracking pixel that is not beeing loaded
 * append `"enable-local-file-access":true` or `"load-error-handling":"ignore"`to `WKHTMLTOPDF_OPTIONS` if you get a `file://...` error
 * add `127.0.0.1 true` to the `HOSTS` env if you get a `http:///true/...` error
+
+## Development
+
+The recommended editor for development is either IntelliJ or Visual Studio Code
+
+### Visual Studio Code
+
+For Visual Studio Code, it is recommended to use the devcontainer included in the repository. With the
+[Remote - Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+extension installed, you should be prompted to open the devcontainer when opening the folder.
+
+For debugging, copy the `env.example` file and rename it to just `env`. Then edit the variables inside
+to the required values for testing. These will be automatically configured when launching via either the
+debug menu or by pressing F5. The `env` file is included in the gitignore.
+
+Formatting issues will cause the github build to fail. To fix formatting issues in your script, open the file
+and run the "Format Document" command.
