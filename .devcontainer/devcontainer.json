@@ -1,0 +1,9 @@
+{
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "postCreateCommand": "poetry install",
+    "extensions":[
+        "ms-python.python"
+    ]
+}
