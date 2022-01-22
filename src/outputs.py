@@ -62,9 +62,7 @@ class SendOutputByEmail(OutputProcessor):
         self.__encryption = encryption
 
     def __enter__(self):
-        self._logger.info(
-            f"Connecting to SMTP server {self.__server}:{self.__port}..."
-        )
+        self._logger.info(f"Connecting to SMTP server {self.__server}:{self.__port}...")
         if self.__encryption == self.SMTP_ENCRYPTION_SSL:
             self._logger.debug(f"Using SSL encryption for SMTP")
             self.__smtp = smtplib.SMTP_SSL(self.__server, self.__port)
