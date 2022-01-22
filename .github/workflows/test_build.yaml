@@ -30,4 +30,4 @@ jobs:
 
       - name: Build
         run: |
-          docker build . # will run buildx
+          docker build . --platform linux/amd64,linux/arm64
