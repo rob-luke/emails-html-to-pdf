@@ -38,6 +38,9 @@ def send_mail(
         username (str): server auth username
         password (str): server auth password
         use_tls (bool): use TLS mode
+
+        smtp_username (str): smtp server auth username (seperate from IMAP server)
+        smtp_password (str): smtp server auth password (seperate from IMAP server)
     """
     msg = MIMEMultipart()
     msg["From"] = send_from
@@ -62,7 +65,7 @@ def send_mail(
     smtp = smtplib.SMTP(server, port)
     if use_tls:
         smtp.starttls()
-    smtp.login(username, password)
+    smtp.login(smtp_username, smtp_password)
     smtp.sendmail(send_from, send_to, msg.as_string())
     smtp.quit()
 
@@ -234,6 +237,9 @@ if __name__ == "__main__":
     username = os.environ.get("IMAP_USERNAME")
     password = os.environ.get("IMAP_PASSWORD")
     folder = os.environ.get("IMAP_FOLDER")
+
+    smtp_username = os.environ.get("SMTP_USERNAME")
+    smtp_password = os.environ.get("SMTP_PASSWORD")
 
     server_smtp = os.environ.get("SMTP_URL")
     sender = os.environ.get("MAIL_SENDER")
