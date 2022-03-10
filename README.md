@@ -29,7 +29,11 @@ The following parameters are used (defaults in parentheses):
 * `HOSTS`: [Semicolon separated list of hosts](https://github.com/rob-luke/emails-html-to-pdf/pull/12) that should be added to /etc/hosts to prevent dns lookup failures 
 * `WKHTMLTOPDF_OPTIONS`: Python dict (json) representation of wkhtmltopdf_options that can be passed to the used pdfkit library
 * `MAIL_MESSAGE_FLAG`: Flag to apply to email after processing.  
-    Must be one of [imap-tools flags](https://github.com/ikvk/imap_tools/blob/7f8fd5e4f3976bbd2efa507843c577affa61d996/imap_tools/consts.py#L10). Values: SEEN (default), ANSWERED, FLAGGED, DELETED, DRAFT, RECENT
+    Must be one of: SEEN (default), ANSWERED, FLAGGED, UNFLAGGED, DELETED
+* `IMAP_FILTER`: Criteria to use when searching for mail to be processed.
+    If no value is provided, a suitable value is determined based on the `MAIL_MESSAGE_FLAG`.
+    See [imap-tools search criteria documentation](https://pypi.org/project/imap-tools/#search-criteria) for how to specify the filter.
+    This should be in the text format (e.g. `(TEXT "hello" NEW)` rather than `AND(text="hello", new=True)`)
 
 ### Docker-Compose
 
