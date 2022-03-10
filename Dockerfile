@@ -1,9 +1,10 @@
-FROM python:3.9-slim
+FROM python:3.9-slim-buster
 
-RUN apt-get update && apt-get -y install wget
-RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb
-RUN apt-get install -y ./wkhtmltox_0.12.6-1.buster_amd64.deb
-RUN rm -rf /var/lib/apt/lists/* && rm wkhtmltox_0.12.6-1.buster_amd64.deb
+ARG TARGETARCH
+
+COPY install_wkhtmltox.sh /build/install_wkhtmltox.sh
+RUN /build/install_wkhtmltox.sh 0.12.6-1 buster $TARGETARCH
+RUN rm -R /build
 
 ENV PYTHONPATH=${PYTHONPATH}:${PWD}
 RUN pip3 install poetry
