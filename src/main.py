@@ -38,9 +38,6 @@ def send_mail(
         username (str): server auth username
         password (str): server auth password
         use_tls (bool): use TLS mode
-
-        smtp_username (str): smtp server auth username (seperate from IMAP server)
-        smtp_password (str): smtp server auth password (seperate from IMAP server)
     """
     msg = MIMEMultipart()
     msg["From"] = send_from
@@ -65,7 +62,7 @@ def send_mail(
     smtp = smtplib.SMTP(server, port)
     if use_tls:
         smtp.starttls()
-    smtp.login(smtp_username, smtp_password)
+    smtp.login(username, password)
     smtp.sendmail(send_from, send_to, msg.as_string())
     smtp.quit()
 
@@ -76,6 +73,8 @@ def process_mail(
     imap_url=None,
     imap_username=None,
     imap_password=None,
+    smtp_username=None,
+    smtp_password=None,
     imap_folder=None,
     mail_sender=None,
     server_smtp=None,
@@ -164,8 +163,8 @@ def process_mail(
                     f"Converted PDF of email from {msg.from_} on {msg.date_str} wih topic {msg.subject}. Content below.\n\n\n\n{msg.text}",
                     files=[filename],
                     server=server_smtp,
-                    username=imap_username,
-                    password=imap_password,
+                    username=smtp_username,
+                    password=smtp_password,
                     port=smtp_port,
                     use_tls=smtp_tls,
                 )
@@ -267,6 +266,8 @@ if __name__ == "__main__":
         pdfkit_options=pdfkit_options,
         smtp_tls=smtp_tls,
         smtp_port=smtp_port,
+        smtp_username=smtp_username,
+        smtp_password=smtp_password,
         mail_msg_flag=mail_msg_flag,
         filter_criteria=filter_criteria,
     )
