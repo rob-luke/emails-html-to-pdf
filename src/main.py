@@ -137,7 +137,7 @@ def process_mail(
                     elif msg.from_values['email']:
                         pdftext = '<font size="-1"><b>' + msg.from_values['email'] + "</b></font><br />" + pdftext
                     if msg.date_str:
-                        pdftext = '<font size="+1">' + msg.date_str + "</font><br /><br />" + pdftext
+                        pdftext = '<font size="-1">' + msg.date_str + "</font><br /><br />" + pdftext
                     if msg.subject:
                         pdftext = '<font size="+1"><b>' + msg.subject + "</b></font><hr>" + pdftext
                     else:
