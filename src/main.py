@@ -129,9 +129,9 @@ def process_mail(
                 if show_header:
                     pdftext = "<br />" + pdftext
                     if msg.to:
-                        pdftext = '<font size="-1">To: ' + join(msg.to) + "</font><br />" + pdftext
+                        pdftext = '<font size="-1">To: ' + "".join(msg.to) + "</font><br />" + pdftext
                     if msg.reply_to:
-                        pdftext = '<font size="-1">Reply-to: ' + join(msg.reply_to) + "</font><br />" + pdftext
+                        pdftext = '<font size="-1">Reply-to: ' + "".join(msg.reply_to) + "</font><br />" + pdftext
                     if msg.from_values.name and msg.from_values.email:
                         pdftext = '<font size="-1"><b>' + msg.from_values.name + " </b>&lt;" + msg.from_values.email + "&gt;</font><br />" + pdftext
                     elif msg.from_values.email:
@@ -144,7 +144,7 @@ def process_mail(
                         pdftext = '<font size="+1"><b>(no subject)</b></font><hr>' + pdftext
                 
                 if show_header_ext:
-                    pdftext = "" + join(msg.headers) + "<br /><br />"
+                    pdftext = "" + "".join(msg.headers) + "<br /><br />"
                     
                 try:
                     pdfkit.from_string(pdftext, filename, options=options)
