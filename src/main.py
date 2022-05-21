@@ -136,12 +136,10 @@ def process_mail(
                         pdftext = '<font size="-1"><b>' + msg.from_values['name'] + " </b>&lt;" + msg.from_values['email'] + "&gt;</font><br />" + pdftext
                     elif msg.from_values['email']:
                         pdftext = '<font size="-1"><b>' + msg.from_values['email'] + "</b></font><br />" + pdftext
-                    if msg.date_str:
-                        pdftext = '<font size="-1">' + msg.date_str + "</font><br /><br />" + pdftext
                     if msg.subject:
-                        pdftext = '<font size="+1"><b>' + msg.subject + "</b></font><hr>" + pdftext
+                        pdftext = '<table width="100%" cellpadding="0" cellspacing="0" border="0""><tbody><tr><td><font size="+1"><b>' + msg.subject + '</b></font></td><td align="right"><font size="-1">' + msg.date_str + '</font></td></tr></table><hr>' + pdftext
                     else:
-                        pdftext = '<font size="+1"><b>(no subject)</b></font><hr>' + pdftext
+                        pdftext = '<table width="100%" cellpadding="0" cellspacing="0" border="0""><tbody><tr><td><font size="+1"><b>(no subject)</b></font></td><td align="right"><font size="-1">' + msg.date_str + '</font></td></tr></table><hr>' + pdftext
                 
                 if show_header_ext:
                     string_data = json.dumps(msg.headers)
