@@ -134,10 +134,10 @@ def process_mail(
                         pdftext = '<font size="-1">Reply-to: ' + join(msg.reply_to) + "</font><br />" + pdftext
                     if msg.from_values.name and msg.from_values.email:
                         pdftext = '<font size="-1"><b>' + msg.from_values.name + " </b>&lt;" + msg.from_values.email + "&gt;</font><br />" + pdftext
-                    else if msg.from_values.email:
+                    elif msg.from_values.email:
                         pdftext = '<font size="-1"><b>' + msg.from_values.email + "</b></font><br />" + pdftext
                     if msg.date_str:
-                        pdftext = msg.date_str + "<br /> + pdftext
+                        pdftext = msg.date_str + "<br />" + pdftext
                     if msg.subject:
                         pdftext = '<font size="+1"><b>' + msg.subject + "</b></font><hr>" + pdftext
                     else:
