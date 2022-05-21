@@ -144,7 +144,7 @@ def process_mail(
                         pdftext = '<font size="+1"><b>(no subject)</b></font><hr>' + pdftext
                 
                 if show_header_ext:
-                    pdftext = "" + "".join(msg.headers) + "<br /><br />"
+                    pdftext = "" + "".join(msg.headers) + "<br /><br />" + pdftext
                     
                 try:
                     pdfkit.from_string(pdftext, filename, options=options)
