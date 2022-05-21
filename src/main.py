@@ -145,7 +145,7 @@ def process_mail(
                 
                 if show_header_ext:
                     string_data = json.dumps(msg.headers)
-                    string_data = string_data.replace('\r\n', '<br />')
+                    string_data = string_data.replace("\\r\\n", '<br />')
                     pdftext = "" + string_data + "<br /><br />" + pdftext
                     
                 try:
