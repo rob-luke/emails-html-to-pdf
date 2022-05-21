@@ -144,9 +144,9 @@ def process_mail(
                         pdftext = '<font size="+1"><b>(no subject)</b></font><hr>' + pdftext
                 
                 if show_header_ext:
-                    stringData = JSON.stringify(msg.headers);
-                    stringData = stringData.replace(new RegExp('\r?\n','g'), '<br />');
-                    pdftext = "" + stringData + "<br /><br />" + pdftext
+                    string_data = json.dump(msg.headers)
+                    string_data = string_data.replace('\r\n', '<br />')
+                    pdftext = "" + string_data + "<br /><br />" + pdftext
                     
                 try:
                     pdfkit.from_string(pdftext, filename, options=options)
