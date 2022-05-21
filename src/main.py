@@ -59,9 +59,12 @@ def send_mail(
         )
         msg.attach(part)
 
-    smtp = smtplib.SMTP(server, port)
-    if use_tls:
-        smtp.starttls()
+    if smtp_port == 465:
+        smtp = smtplib.SMTP_SSL(server, port)
+    else:
+        smtp = smtplib.SMTP(server, port)
+        if use_tls:
+            smtp.starttls()
     smtp.login(username, password)
     smtp.sendmail(send_from, send_to, msg.as_string())
     smtp.quit()
