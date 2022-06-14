@@ -238,7 +238,7 @@ if __name__ == "__main__":
     folder = os.environ.get("IMAP_FOLDER")
 
     smtp_username = os.environ.get("SMTP_USERNAME")
-    smtp_password = os.environ.get("SMTP_PASSWORD")
+    smtp_password = os.environ.get("SMTP_PASSWORD", password)
 
     server_smtp = os.environ.get("SMTP_URL")
     sender = os.environ.get("MAIL_SENDER")
