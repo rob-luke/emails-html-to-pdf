@@ -27,7 +27,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build docker image
-        run: DOCKER_BUILDKIT=1 docker build --progress=plain --platform linux/amd64,linux/arm64 -t ghcr.io/${GITHUB_REPOSITORY}/${GITHUB_REF##*/} .
+        run: DOCKER_BUILDKIT=1 docker build --progress=plain -t ghcr.io/${GITHUB_REPOSITORY}/${GITHUB_REF##*/} .
 
       - name: Tag image
         run: docker tag ghcr.io/${GITHUB_REPOSITORY}/${GITHUB_REF##*/} ghcr.io/rob-luke/emails-html-to-pdf:latest
