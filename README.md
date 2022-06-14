@@ -18,6 +18,8 @@ The following parameters are used (defaults in parentheses):
 * `IMAP_URL` 
 * `IMAP_USERNAME`
 * `IMAP_PASSWORD`
+* `SMTP_USERNAME` (optional) uses imap username if not provided
+* `SMTP_PASSWORD` (optional) uses imap password if not provided
 * `IMAP_FOLDER` Which folder to watch for unread emails
 * `SMTP_URL`
 * `MAIL_SENDER`: Address the mail with pdf should be sent from
