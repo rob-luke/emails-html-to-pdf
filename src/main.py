@@ -59,7 +59,7 @@ def send_mail(
         )
         msg.attach(part)
 
-    if smtp_port == 465:
+    if port == 465:
         smtp = smtplib.SMTP_SSL(server, port)
     else:
         smtp = smtplib.SMTP(server, port)
