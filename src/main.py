@@ -85,6 +85,8 @@ def process_mail(
     pdfkit_options=None,
     mail_msg_flag=None,
     filter_criteria=AND(seen=False),
+    show_header=None,
+    show_header_ext=None,
 ):
     print("Starting mail processing run", flush=True)
     if printfailedmessage:
@@ -125,6 +127,27 @@ def process_mail(
                 if pdfkit_options is not None:
                     # parse WKHTMLTOPDF Options to dict
                     options = json.loads(pdfkit_options)
+                    
+                if show_header:
+                    pdftext = "<br />" + pdftext
+                    if msg.to:
+                        pdftext = '<font size="-1">To: ' + "".join(msg.to) + "</font><br />" + pdftext
+                    if msg.reply_to:
+                        pdftext = '<font size="-1">Reply-to: ' + "".join(msg.reply_to) + "</font><br />" + pdftext
+                    if msg.from_values['name'] and msg.from_values['email']:
+                        pdftext = '<font size="-1"><b>' + msg.from_values['name'] + " </b>&lt;" + msg.from_values['email'] + "&gt;</font><br />" + pdftext
+                    elif msg.from_values['email']:
+                        pdftext = '<font size="-1"><b>' + msg.from_values['email'] + "</b></font><br />" + pdftext
+                    if msg.subject:
+                        pdftext = '<table width="100%" cellpadding="0" cellspacing="0" border="0""><tbody><tr><td><font size="+1"><b>' + msg.subject + '</b></font></td><td align="right"><font size="-1">' + msg.date_str + '</font></td></tr></table><hr>' + pdftext
+                    else:
+                        pdftext = '<table width="100%" cellpadding="0" cellspacing="0" border="0""><tbody><tr><td><font size="+1"><b>(no subject)</b></font></td><td align="right"><font size="-1">' + msg.date_str + '</font></td></tr></table><hr>' + pdftext
+                
+                if show_header_ext:
+                    string_data = json.dumps(msg.headers)
+                    string_data = string_data.replace("\\r\\n", '<br />')
+                    pdftext = "" + string_data + "<br /><br />" + pdftext
+                    
                 try:
                     pdfkit.from_string(pdftext, filename, options=options)
                 except OSError as e:
@@ -245,6 +268,9 @@ if __name__ == "__main__":
     destination = os.environ.get("MAIL_DESTINATION")
     smtp_port = os.getenv("SMTP_PORT", 587)
     smtp_tls = os.getenv("SMTP_TLS", True)
+    
+    show_header = os.getenv("EMAIL_HEADER", False)
+    show_header_ext = os.getenv("EMAIL_HEADER_EXT", False)
 
     printfailedmessage = os.getenv("PRINT_FAILED_MSG", "False") == "True"
     pdfkit_options = os.environ.get("WKHTMLTOPDF_OPTIONS")
@@ -270,4 +296,6 @@ if __name__ == "__main__":
         smtp_password=smtp_password,
         mail_msg_flag=mail_msg_flag,
         filter_criteria=filter_criteria,
+        show_header=show_header,
+        show_header_ext=show_header_ext,
     )
